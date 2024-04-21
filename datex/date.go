@@ -1,7 +1,7 @@
 /*
  * @Author: Coller
  * @Date: 2021-09-24 12:30:08
- * @LastEditTime: 2024-04-21 14:38:12
+ * @LastEditTime: 2024-04-21 16:22:33
  * @Desc: 时间处理
  */
 package datex
@@ -31,25 +31,8 @@ func NowUnix() int64 {
  * @param undefined
  * @return {*}
  */
-func FromUnix(unix int64) time.Time {
+func UnixToTime(unix int64) time.Time {
 	return time.Unix(unix, 0)
-}
-
-/**
- * @desc: 当前毫秒时间戳
- * @return {*}
- */
-func NowTimestamp() int64 {
-	return Timestamp(time.Now())
-}
-
-/**
- * @desc: 时间转毫秒时间戳
- * @param undefined
- * @return {*}
- */
-func Timestamp(t time.Time) int64 {
-	return t.UnixNano() / 1e6
 }
 
 /**
@@ -57,8 +40,25 @@ func Timestamp(t time.Time) int64 {
  * @param undefined
  * @return {*}
  */
-func FromTimestamp(timestamp int64) time.Time {
-	return time.Unix(0, timestamp*int64(time.Millisecond))
+func UnixMilliToTime(unix int64) time.Time {
+	return time.UnixMilli(unix)
+}
+
+/**
+ * @desc: 当前毫秒时间戳
+ * @return {*}
+ */
+func NowUnixMilli() int64 {
+	return TimeToUnixMilli(time.Now())
+}
+
+/**
+ * @desc: 时间转毫秒时间戳
+ * @param undefined
+ * @return {*}
+ */
+func TimeToUnixMilli(t time.Time) int64 {
+	return t.UnixMilli()
 }
 
 /**
@@ -66,18 +66,18 @@ func FromTimestamp(timestamp int64) time.Time {
  * @param undefined
  * @return {*}
  */
-func FormatTimestamp(timestamp int64, format string) string {
+func FormatUnixMilli(timestamp int64, format string) string {
 	if format == "" {
 		format = FmtDateTime
 	}
-	return Format(time.Unix(0, timestamp*int64(time.Millisecond)), format)
+	return TimeToString(time.Unix(0, timestamp*int64(time.Millisecond)), format)
 }
 
 /**
  * @desc: 时间格式化
  * @return {*}
  */
-func Format(time time.Time, layout string) string {
+func TimeToString(time time.Time, layout string) string {
 	if time.IsZero() {
 		return ""
 	}
@@ -90,7 +90,7 @@ func Format(time time.Time, layout string) string {
  * @param undefined
  * @return {*}
  */
-func Parse(timeStr, layout string) (time.Time, error) {
+func StringToTime(timeStr, layout string) (time.Time, error) {
 	return time.Parse(layout, timeStr)
 }
 
@@ -122,20 +122,20 @@ func WithTimeAsStartOfDay(t time.Time) time.Time {
  * 前天以后--->mm-dd（2月18日）
  */
 func PrettyTime(milliseconds int64) string {
-	t := FromTimestamp(milliseconds)
-	duration := (NowTimestamp() - milliseconds) / 1000
+	t := UnixMilliToTime(milliseconds)
+	duration := (NowUnixMilli() - milliseconds) / 1000
 	if duration < 60 {
 		return "刚刚"
 	} else if duration < 3600 {
 		return strconv.FormatInt(duration/60, 10) + "分钟前"
 	} else if duration < 86400 {
 		return strconv.FormatInt(duration/3600, 10) + "小时前"
-	} else if Timestamp(WithTimeAsStartOfDay(time.Now().Add(-time.Hour*24))) <= milliseconds {
-		return "昨天 " + Format(t, FmtTime)
-	} else if Timestamp(WithTimeAsStartOfDay(time.Now().Add(-time.Hour*24*2))) <= milliseconds {
-		return "前天 " + Format(t, FmtTime)
+	} else if TimeToUnixMilli(WithTimeAsStartOfDay(time.Now().Add(-time.Hour*24))) <= milliseconds {
+		return "昨天 " + TimeToString(t, FmtTime)
+	} else if TimeToUnixMilli(WithTimeAsStartOfDay(time.Now().Add(-time.Hour*24*2))) <= milliseconds {
+		return "前天 " + TimeToString(t, FmtTime)
 	} else {
-		return Format(t, FmtDate)
+		return TimeToString(t, FmtDate)
 	}
 }
 
@@ -232,4 +232,9 @@ func GetBetweenDates(startDate, endDate string) []string {
 		}
 	}
 	return d
+}
+
+func TodayBeginTime() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 }
