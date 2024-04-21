@@ -148,10 +148,10 @@ func (f FileOp) ChmodR(dst string, mode int64, sub bool) error {
 	if sub {
 		cmdStr = fmt.Sprintf(`chmod -R %v "%s"`, fmt.Sprintf("%04o", mode), dst)
 	}
-	if cmd.HasNoPasswordSudo() {
+	if cmdx.HasNoPasswordSudo() {
 		cmdStr = fmt.Sprintf("sudo %s", cmdStr)
 	}
-	if msg, err := cmd.ExecWithTimeOut(cmdStr, 2*time.Second); err != nil {
+	if msg, err := cmdx.ExecWithTimeOut(cmdStr, 2*time.Second); err != nil {
 		if msg != "" {
 			return errors.New(msg)
 		}
@@ -196,7 +196,7 @@ func (f FileOp) Cut(oldPaths []string, dst, name string, cover bool) error {
 		}
 
 		cmdStr := fmt.Sprintf(`mv %s "%s" "%s"`, coverFlag, p, dstPath)
-		if err := cmd.ExecCmd(cmdStr); err != nil {
+		if err := cmdx.ExecCmd(cmdStr); err != nil {
 			return err
 		}
 	}
