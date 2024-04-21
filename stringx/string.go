@@ -1,7 +1,7 @@
 /*
  * @Author: Coller
  * @Date: 2022-05-17 12:38:10
- * @LastEditTime: 2024-04-21 14:45:10
+ * @LastEditTime: 2024-04-21 17:17:40
  * @Desc: 字符串处理
  */
 package stringx
@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/fasthey/go-utils/conv"
 
@@ -209,4 +211,28 @@ func LogContent(old, new string) string {
 		return old + " >> " + new
 	}
 	return ""
+}
+
+// UpperFirst converts the first character of string to upper case.
+func UpperFirst(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
+	r, size := utf8.DecodeRuneInString(s)
+	r = unicode.ToUpper(r)
+
+	return string(r) + s[size:]
+}
+
+// LowerFirst converts the first character of string to lower case
+func LowerFirst(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
+	r, size := utf8.DecodeRuneInString(s)
+	r = unicode.ToLower(r)
+
+	return string(r) + s[size:]
 }
