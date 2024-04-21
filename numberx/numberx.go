@@ -1,3 +1,11 @@
+/*
+ * @Author: coller coller@88.com
+ * @Date: 2024-04-10 09:55:10
+ * @LastEditors: coller coller@88.com
+ * @LastEditTime: 2024-04-21 17:10:40
+ * @FilePath: /go-utils/numberx/numberx.go
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 package numberx
 
 import (
@@ -5,6 +13,7 @@ import (
 	"math/big"
 	mathRand "math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -78,4 +87,11 @@ func RandRangeInt[T int | int64](min, max T) T {
 		return RandRangeInt(min, max)
 	}
 	return T(i.Int64())
+}
+
+func MoneyToFormatFloat(old string) float64 {
+	s := strings.Replace(old, "$", "", 1)
+	s = strings.Replace(s, ",", "", -1)
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }
