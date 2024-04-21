@@ -10,8 +10,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
-	"reflect"
-	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -123,68 +121,7 @@ func ZeroFillByStr(str string, resultLen int, reverse bool) string {
 	return result
 }
 
-// 去除字符串中的html标签
-func TrimHtml(src string) string {
-	//将HTML标签全转换成小写
-	re, _ := regexp.Compile("\\<[\\S\\s]+?\\>")
-	src = re.ReplaceAllStringFunc(src, strings.ToLower)
-	//去除STYLE
-	re, _ = regexp.Compile("\\<style[\\S\\s]+?\\</style\\>")
-	src = re.ReplaceAllString(src, "")
-	//去除SCRIPT
-	re, _ = regexp.Compile("\\<script[\\S\\s]+?\\</script\\>")
-	src = re.ReplaceAllString(src, "")
-	//去除所有尖括号内的HTML代码，并换成换行符
-	re, _ = regexp.Compile("\\<[\\S\\s]+?\\>")
-	src = re.ReplaceAllString(src, "")
-	//去除连续的换行符
-	re, _ = regexp.Compile("\\s{2,}")
-	src = re.ReplaceAllString(src, "")
-	src = strings.Replace(src, "&nbsp;", "", 1) // 去除空格符
-	return strings.TrimSpace(src)
-}
-
-/**
- * @desc: 解析grom的表名
- * @param {string} str
- * @return {*}
- */
-func GetGromTag(str string) string {
-	if str == "" || str == "-" {
-		return ""
-	}
-	if strings.Contains(str, "column") {
-		names := strings.Split(str, ";")
-		if names[0] != "" {
-			column := strings.Split(names[0], ":")
-			if column[1] != "" {
-				return column[1]
-			}
-		}
-	}
-	return ""
-}
-
-/**
- * @desc: 排除掉多余的字段
- * @param {string} str
- * @return {*}
- */
-func GetTableFields(field []string, dst interface{}) (tableFields []string) {
-	tableFields = append(tableFields, "id")
-	fields := reflect.TypeOf(dst).Elem()
-	for i := 0; i < fields.NumField(); i++ {
-		fieldName := GetGromTag(fields.Field(i).Tag.Get("gorm"))
-		if fieldName != "" {
-			if StringInArray(fieldName, field) {
-				tableFields = append(tableFields, fieldName)
-			}
-		}
-	}
-	return tableFields
-}
-
-func GetDupList(list []string) []string {
+func ListDup(list []string) []string {
 	dupFre := make(map[string]int)
 	var dep []string
 	for _, item := range list {
@@ -202,15 +139,8 @@ func GetDupList(list []string) []string {
 	return dep
 }
 
-func MoneyFormatString(money float64) string {
+func FormatMoney(money float64) string {
 	return phpx.NumberFormat(money, 2, ".", "")
-}
-
-func LogContent(old, new string) string {
-	if old != new {
-		return old + " >> " + new
-	}
-	return ""
 }
 
 // UpperFirst converts the first character of string to upper case.
@@ -235,4 +165,14 @@ func LowerFirst(s string) string {
 	r = unicode.ToLower(r)
 
 	return string(r) + s[size:]
+}
+
+/**
+ * @desc: RuneLen 字符成长度
+ * @param undefined
+ * @return {*}
+ */
+func RuneLen(s string) int {
+	bt := []rune(s)
+	return len(bt)
 }

@@ -1,12 +1,13 @@
 /*
  * @Author: Coller
  * @Date: 2021-09-24 12:30:08
- * @LastEditTime: 2024-01-04 09:30:25
+ * @LastEditTime: 2024-04-21 17:33:02
  * @Desc: 文件操作
  */
 package filex
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -133,4 +134,45 @@ func CreateDir(dirs ...string) (err error) {
 		}
 	}
 	return err
+}
+
+func IsExist(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return false
+}
+
+func Read(filePath string) (fileData []byte, err error) {
+	if filePath == "" {
+		return nil, errors.New("file is not exist")
+	}
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, errors.New("file is open fail")
+	}
+	defer file.Close()
+	return io.ReadAll(file)
+}
+
+func Create(filePath string, fileData []byte) (err error) {
+	if filePath == "" {
+		return errors.New("file is not exist")
+	}
+	filePtr, err := os.Create(filePath)
+	if err != nil {
+		return err
+	} else {
+		defer filePtr.Close()
+	}
+	_, writeErr := filePtr.WriteString(string(fileData))
+	if writeErr != nil {
+		return err
+	}
+	defer filePtr.Close()
+	return
 }

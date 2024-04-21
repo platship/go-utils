@@ -1,14 +1,7 @@
-/*
- * @Author: coller coller@88.com
- * @Date: 2024-04-21 15:44:25
- * @LastEditors: coller coller@88.com
- * @LastEditTime: 2024-04-21 15:48:12
- * @FilePath: /go-utils/htmlx/htmlx.go
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 package htmlx
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -21,4 +14,25 @@ func TextFromHTML(html string) string {
 		return ""
 	}
 	return doc.Text()
+}
+
+// 去除字符串中的html标签
+func TrimHtml(src string) string {
+	//将HTML标签全转换成小写
+	re, _ := regexp.Compile("\\<[\\S\\s]+?\\>")
+	src = re.ReplaceAllStringFunc(src, strings.ToLower)
+	//去除STYLE
+	re, _ = regexp.Compile("\\<style[\\S\\s]+?\\</style\\>")
+	src = re.ReplaceAllString(src, "")
+	//去除SCRIPT
+	re, _ = regexp.Compile("\\<script[\\S\\s]+?\\</script\\>")
+	src = re.ReplaceAllString(src, "")
+	//去除所有尖括号内的HTML代码，并换成换行符
+	re, _ = regexp.Compile("\\<[\\S\\s]+?\\>")
+	src = re.ReplaceAllString(src, "")
+	//去除连续的换行符
+	re, _ = regexp.Compile("\\s{2,}")
+	src = re.ReplaceAllString(src, "")
+	src = strings.Replace(src, "&nbsp;", "", 1) // 去除空格符
+	return strings.TrimSpace(src)
 }

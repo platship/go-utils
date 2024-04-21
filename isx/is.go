@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+
+	"github.com/fasthey/go-utils/stringx"
 )
 
 /**
@@ -130,16 +132,6 @@ func IsField(name string) (err error) {
 }
 
 /**
- * @desc: RuneLen 字符成长度
- * @param undefined
- * @return {*}
- */
-func RuneLen(s string) int {
-	bt := []rune(s)
-	return len(bt)
-}
-
-/**
  * @desc: IsPassword 是否是合法的密码
  * @param undefined
  * @param undefined
@@ -149,7 +141,7 @@ func IsPassword(password, rePassword string) error {
 	if IsString(password) {
 		return errors.New("请输入密码")
 	}
-	if RuneLen(password) < 6 {
+	if stringx.RuneLen(password) < 6 {
 		return errors.New("密码过于简单")
 	}
 	if password != rePassword {
@@ -191,7 +183,7 @@ func IsMobile(mobileNum string) bool {
  * @param {[]string} list
  * @return {*}
  */
-func StringListDup(list []string) bool {
+func IsStringListDup(list []string) bool {
 	tmpMap := make(map[string]int)
 	for _, value := range list {
 		tmpMap[value] = 1
