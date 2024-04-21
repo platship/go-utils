@@ -46,7 +46,7 @@ func gbkToPinyin(gbk string) []string {
 			q := int(gbk[i])
 			p = p*256 + q - 65536
 
-			py := pinyinSearch(p)
+			py := Search(p)
 			if py != "" {
 				// if c.Upper == false {
 				// 	py = strings.ToLower(py)
