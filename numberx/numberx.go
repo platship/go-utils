@@ -1,16 +1,10 @@
-/*
- * @Author: coller
- * @Date: 2024-04-10 09:55:10
- * @LastEditors: coller
- * @LastEditTime: 2024-04-10 09:56:42
- * @Desc:
- */
 package numberx
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
+	mathRand "math/rand"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -64,15 +58,24 @@ func UintArrayRemove(s []uint, index uint) []uint {
  * @return {*}
  */
 func RandInt(start int, end int) string {
-	rand.Seed(time.Now().UnixNano())
-	random := rand.Intn(end - start)
+	mathRand.Seed(time.Now().UnixNano())
+	random := mathRand.Intn(end - start)
 	random = start + random
 	return strconv.Itoa(random)
 }
 
-func MoneyToFormatFloat(old string) float64 {
-	s := strings.Replace(old, "$", "", 1)
-	s = strings.Replace(s, ",", "", -1)
-	f, _ := strconv.ParseFloat(s, 64)
-	return f
+// RandRangeInt 获取范围随机数 [min, max)
+func RandRangeInt[T int | int64](min, max T) T {
+	if min < 0 || max <= 0 {
+		return 0
+	}
+	if min >= max {
+		return 0
+	}
+	maxBigInt := big.NewInt(int64(max))
+	i, _ := rand.Int(rand.Reader, maxBigInt)
+	if i.Int64() < int64(min) {
+		return RandRangeInt(min, max)
+	}
+	return T(i.Int64())
 }
