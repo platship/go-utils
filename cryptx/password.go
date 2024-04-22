@@ -9,8 +9,7 @@ package cryptx
 import (
 	"fmt"
 
-	"github.com/fasthey/go-utils/conv"
-
+	"github.com/duke-git/lancet/v2/convertor"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,11 +19,12 @@ import (
  * @return {*}
  */
 func EncodePassword(rawPassword string) string {
-	hash, err := bcrypt.GenerateFromPassword(conv.StringToByte(rawPassword), bcrypt.DefaultCost)
+	bytePassword, _ := convertor.ToBytes(rawPassword)
+	hash, err := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return conv.ByteToString(hash)
+	return convertor.ToString(hash)
 }
 
 /**
@@ -34,6 +34,8 @@ func EncodePassword(rawPassword string) string {
  * @return {*}
  */
 func ValidatePassword(encodePassword, inputPassword string) bool {
-	err := bcrypt.CompareHashAndPassword(conv.StringToByte(encodePassword), conv.StringToByte(inputPassword))
+	byteEncodePassword, _ := convertor.ToBytes(encodePassword)
+	byteInputPassword, _ := convertor.ToBytes(inputPassword)
+	err := bcrypt.CompareHashAndPassword(byteEncodePassword, byteInputPassword)
 	return err == nil
 }

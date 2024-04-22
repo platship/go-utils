@@ -1,24 +1,14 @@
 package osx
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/duke-git/lancet/v2/fileutil"
 )
 
-func IsExist(path string) bool {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true
-	}
-	if errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-	return false
-}
-
 func CreateDirIsNotExist(dir string, perm os.FileMode) (err error) {
-	if IsExist(dir) {
+	if fileutil.IsExist(dir) {
 		return
 	}
 	return os.MkdirAll(dir, perm)

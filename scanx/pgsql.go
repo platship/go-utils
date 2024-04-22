@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/fasthey/go-utils/conv"
+	"github.com/duke-git/lancet/v2/convertor"
 )
 
 /**
@@ -49,7 +49,8 @@ func PgRowToMap(rows *sql.Rows) map[string]interface{} {
 				}
 			case string:
 				if strings.HasSuffix(colType.Name(), "_number") || strings.HasSuffix(colType.Name(), "_rate") || strings.HasSuffix(colType.Name(), "_slider") || strings.HasSuffix(colType.Name(), "_money") {
-					record[colType.Name()] = conv.StringToFloat64(rowValue[i].(string))
+					val, _ := convertor.ToFloat(rowValue[i])
+					record[colType.Name()] = val
 				} else {
 					record[colType.Name()] = rowValue[i]
 				}

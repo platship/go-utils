@@ -1,9 +1,3 @@
-/*
- * @Author: Coller
- * @Date: 2021-09-24 12:30:08
- * @LastEditTime: 2024-04-21 16:22:33
- * @Desc: 时间处理
- */
 package datex
 
 import (

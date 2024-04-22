@@ -4,10 +4,10 @@ go 1.20
 
 require (
 	github.com/PuerkitoBio/goquery v1.9.1
+	github.com/duke-git/lancet/v2 v2.3.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/muesli/smartcrop v0.3.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/afero v1.11.0
 	golang.org/x/crypto v0.22.0
 	golang.org/x/text v0.14.0
 )
