@@ -28,7 +28,7 @@ func pkcs7UnPadding(data []byte) ([]byte, error) {
 }
 
 // AesEncrypt 加密
-func AesEncrypt(s, sKey, iKey string) (d string) {
+func AesEncrypt(s, iKey string) (d string) {
 	data := []byte(s)
 	key := []byte(iKey)
 	//创建加密实例
