@@ -1,10 +1,3 @@
-/*
- * @Author: coller
- * @Date: 2023-02-08 10:04:16
- * @LastEditors: coller
- * @LastEditTime: 2024-04-21 14:36:38
- * @Desc:
- */
 package cryptx
 
 import (
@@ -37,10 +30,7 @@ func pkcs7UnPadding(data []byte) ([]byte, error) {
 // AesEncrypt 加密
 func AesEncrypt(s, sKey, iKey string) (d string) {
 	data := []byte(s)
-	key := []byte(sKey)
-	if iKey != "" {
-		key = []byte(iKey)
-	}
+	key := []byte(iKey)
 	//创建加密实例
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -60,16 +50,13 @@ func AesEncrypt(s, sKey, iKey string) (d string) {
 }
 
 // AesDecrypt 解密
-func AesDecrypt(s, sKey, iKey string) string {
+func AesDecrypt(s string, iKey string) string {
 	n, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		return ""
 	}
 	data := []byte(n)
-	key := []byte(sKey)
-	if iKey != "" {
-		key = []byte(iKey)
-	}
+	key := []byte(iKey)
 	//创建实例
 	block, err := aes.NewCipher(key)
 	if err != nil {
