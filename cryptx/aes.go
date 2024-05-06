@@ -6,7 +6,10 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
+	"fmt"
 )
+
+var sKey = "fastheyzxcvbnmqw"
 
 func pkcs7Padding(data []byte, blockSize int) []byte {
 	//判断缺少几位长度。最少1，最多 blockSize
@@ -29,6 +32,10 @@ func pkcs7UnPadding(data []byte) ([]byte, error) {
 
 // AesEncrypt 加密
 func AesEncrypt(s, iKey string) (d string) {
+	if iKey == "" {
+		iKey = sKey
+	}
+	fmt.Println(iKey, "iKeyiKeyiKeyiKey")
 	data := []byte(s)
 	key := []byte(iKey)
 	//创建加密实例
@@ -51,6 +58,9 @@ func AesEncrypt(s, iKey string) (d string) {
 
 // AesDecrypt 解密
 func AesDecrypt(s string, iKey string) string {
+	if iKey == "" {
+		iKey = sKey
+	}
 	n, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		return ""
