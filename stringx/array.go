@@ -15,3 +15,27 @@ func ArrayRemoveElement(arr []string, target string) []string {
 	}
 	return newArray
 }
+
+/**
+ * @desc: 字符串数组去重
+ * @param {[]uint} list
+ * @return {*}
+ */
+func ArrayRemoveDup(list []string) []string {
+	var x []string = []string{}
+	for _, i := range list {
+		if len(x) == 0 {
+			x = append(x, i)
+		} else {
+			for k, v := range x {
+				if i == v {
+					break
+				}
+				if k == len(x)-1 {
+					x = append(x, i)
+				}
+			}
+		}
+	}
+	return x
+}

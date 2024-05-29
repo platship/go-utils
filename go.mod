@@ -1,4 +1,4 @@
-module github.com/fasthey/go-utils
+module github.com/rehok/go-utils
 
 go 1.20
 

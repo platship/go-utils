@@ -36,3 +36,10 @@ func TrimHtml(src string) string {
 	src = strings.Replace(src, "&nbsp;", "", 1) // 去除空格符
 	return strings.TrimSpace(src)
 }
+
+func TrimLineBreaks(str string) string {
+	str = strings.ReplaceAll(str, "\n", "")
+	str = strings.ReplaceAll(str, "\"", "")
+	str = strings.Replace(str, "&nbsp;", "", 1) // 去除空格符
+	return str
+}
