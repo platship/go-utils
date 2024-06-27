@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
+	"strings"
 )
 
 var sKey = "rehokzxcvbnmqwer"
@@ -22,24 +23,27 @@ func pkcs7Padding(data []byte, blockSize int) []byte {
 func pkcs7UnPadding(data []byte) ([]byte, error) {
 	length := len(data)
 	if length == 0 {
-		return nil, errors.New("加密字符串错误！")
+		return nil, errors.New("strings error")
 	}
 	//获取填充的个数
 	unPadding := int(data[length-1])
+	if unPadding > length {
+		return nil, errors.New("strings error")
+	}
 	return data[:(length - unPadding)], nil
 }
 
 // AesEncrypt 加密
-func AesEncrypt(s, iKey string) (d string) {
+func AesEncrypt(str, iKey string) (d string, err error) {
 	if iKey == "" {
 		iKey = sKey
 	}
-	data := []byte(s)
+	data := []byte(str)
 	key := []byte(iKey)
 	//创建加密实例
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	//判断加密块的大小
 	blockSize := block.BlockSize()
@@ -51,24 +55,25 @@ func AesEncrypt(s, iKey string) (d string) {
 	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
 	//执行加密
 	blockMode.CryptBlocks(crypted, encryptBytes)
-	return base64.StdEncoding.EncodeToString(crypted)
+	return strings.Replace(base64.StdEncoding.EncodeToString(crypted), "+", "_", -1), nil
 }
 
 // AesDecrypt 解密
-func AesDecrypt(s string, iKey string) string {
+func AesDecrypt(str string, iKey string) (string, error) {
+	str = strings.Replace(str, "_", "+", -1)
 	if iKey == "" {
 		iKey = sKey
 	}
-	n, err := base64.StdEncoding.DecodeString(s)
+	n, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	data := []byte(n)
 	key := []byte(iKey)
 	//创建实例
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	//获取块的大小
 	blockSize := block.BlockSize()
@@ -81,7 +86,7 @@ func AesDecrypt(s string, iKey string) string {
 	//去除填充
 	crypted, err = pkcs7UnPadding(crypted)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(crypted)
+	return string(crypted), nil
 }
