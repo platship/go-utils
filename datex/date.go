@@ -228,7 +228,8 @@ func GetBetweenDates(startDate, endDate string) []string {
 	return d
 }
 
-func TodayBeginTime() time.Time {
+// 获取当天0点时间
+func GetTodayBeginTime() time.Time {
 	now := time.Now()
 	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 }
