@@ -6,6 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/duke-git/lancet/v2 v2.3.0
 	github.com/fsnotify/fsnotify v1.7.0
+	github.com/goccy/go-json v0.10.3
 	github.com/muesli/smartcrop v0.3.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	golang.org/x/crypto v0.22.0

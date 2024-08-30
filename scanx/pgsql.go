@@ -2,11 +2,11 @@ package scanx
 
 import (
 	"database/sql"
-	"encoding/json"
 	"reflect"
 	"strings"
 
 	"github.com/duke-git/lancet/v2/convertor"
+	"github.com/goccy/go-json"
 )
 
 /**

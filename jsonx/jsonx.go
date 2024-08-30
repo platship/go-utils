@@ -2,10 +2,12 @@ package jsonx
 
 import (
 	"bytes"
-	"encoding/json"
+
 	"log"
 	"regexp"
 	"strconv"
+
+	"github.com/goccy/go-json"
 )
 
 type Snake struct {
