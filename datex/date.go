@@ -10,6 +10,7 @@ const (
 	FmtTime              = "15:04:05"
 	FmtDateTime          = "2006-01-02 15:04:05"
 	FmtDateTimeNoSeconds = "2006-01-02 15:04"
+	FmtDateTimeNoMinutes = "2006-01-02 15"
 )
 
 /**
@@ -191,9 +192,8 @@ func GetDaysByToday(start, end time.Time) int {
 	return int(end.Sub(start).Hours() / 24)
 }
 
-// GetBetweenDates 根据开始日期和结束日期计算出时间段内所有日期
 // 参数为日期格式，如：2020-01-01
-func GetBetweenDates(startDate, endDate string) []string {
+func GetBetweenTimes(startDate, endDate string, types ...string) []string {
 	d := []string{}
 	timeFormatTpl := FmtDateTime
 	if len(timeFormatTpl) != len(startDate) {
@@ -218,7 +218,21 @@ func GetBetweenDates(startDate, endDate string) []string {
 	date2Str := date2.Format(timeFormatTpl)
 	d = append(d, date.Format(timeFormatTpl))
 	for {
-		date = date.AddDate(0, 0, 1)
+		if len(types) > 0 {
+			var num int
+			if len(types) == 2 {
+				num, _ = strconv.Atoi(types[1])
+			}
+			if types[0] == "hour" {
+				date = date.Add(time.Hour * time.Duration(num))
+			} else if types[0] == "minute" {
+				date = date.Add(time.Minute * time.Duration(num))
+			} else if types[0] == "moon" {
+				date = date.AddDate(0, 1, 0)
+			}
+		} else {
+			date = date.AddDate(0, 0, 1)
+		}
 		dateStr := date.Format(timeFormatTpl)
 		d = append(d, dateStr)
 		if dateStr == date2Str {

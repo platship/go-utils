@@ -9,26 +9,19 @@ package curlx
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/goccy/go-json"
 )
 
-type Headers struct {
-	Name  string
-	Value string
-}
-
 // 发送GET请求
 // url：         请求地址
 // response：    请求返回的内容
-func Get(url string, headers ...*Headers) (res []byte, err error) {
+func Get(url string, headers ...map[string]string) (res []byte, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -36,7 +29,11 @@ func Get(url string, headers ...*Headers) (res []byte, err error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
-		req.Header.Set(v.Name, v.Value)
+		for kk, vv := range v {
+			if kk != "" && vv != "" {
+				req.Header.Set(kk, vv)
+			}
+		}
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -55,7 +52,7 @@ func Get(url string, headers ...*Headers) (res []byte, err error) {
 // data：        POST请求提交的数据
 // contentType： 请求体格式，如：application/json
 // content：     请求放回的内容
-func Post(url string, data interface{}, headers ...*Headers) (res []byte, err error) {
+func Post(url string, data interface{}, headers ...map[string]string) (res []byte, err error) {
 	// 超时时间：10秒
 	client := &http.Client{Timeout: 10 * time.Second}
 	jsonStr, _ := json.Marshal(data)
@@ -66,7 +63,11 @@ func Post(url string, data interface{}, headers ...*Headers) (res []byte, err er
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
-		req.Header.Set(v.Name, v.Value)
+		for kk, vv := range v {
+			if kk != "" && vv != "" {
+				req.Header.Set(kk, vv)
+			}
+		}
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -80,7 +81,7 @@ func Post(url string, data interface{}, headers ...*Headers) (res []byte, err er
 	return result, nil
 }
 
-func Request(method, url string, data interface{}, headers ...*Headers) (res []byte, err error) {
+func Request(method, url string, data interface{}, headers ...map[string]string) (res []byte, err error) {
 	// 超时时间：10秒
 	client := &http.Client{Timeout: 10 * time.Second}
 	jsonStr, _ := json.Marshal(data)
@@ -91,7 +92,11 @@ func Request(method, url string, data interface{}, headers ...*Headers) (res []b
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
-		req.Header.Set(v.Name, v.Value)
+		for kk, vv := range v {
+			if kk != "" && vv != "" {
+				req.Header.Set(kk, vv)
+			}
+		}
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -105,7 +110,7 @@ func Request(method, url string, data interface{}, headers ...*Headers) (res []b
 	return result, nil
 }
 
-func PostForm(urls string, data map[string]string, headers ...*Headers) (res []byte, err error) {
+func PostForm(urls string, data map[string]string, headers ...map[string]string) (res []byte, err error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 
 	postData := url.Values{}
@@ -119,7 +124,11 @@ func PostForm(urls string, data map[string]string, headers ...*Headers) (res []b
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	for _, v := range headers {
-		req.Header.Set(v.Name, v.Value)
+		for kk, vv := range v {
+			if kk != "" && vv != "" {
+				req.Header.Set(kk, vv)
+			}
+		}
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -129,31 +138,6 @@ func PostForm(urls string, data map[string]string, headers ...*Headers) (res []b
 	result, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New("request read error")
-	}
-	return result, nil
-}
-
-func GetProxy(site, proxy string, headers ...*Headers) (res []byte, err error) {
-	proxyURL, err := url.Parse(proxy)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "错误解析代理URL: %v\n", err)
-		os.Exit(1)
-	}
-	// 创建一个代理客户端
-	proxyClient := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-		},
-	}
-	resp, err := proxyClient.Get(site)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "request error: %v\n", err)
-		os.Exit(1)
-	}
-	defer resp.Body.Close()
-	result, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return res, errors.New("read error")
 	}
 	return result, nil
 }
