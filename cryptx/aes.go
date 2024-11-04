@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var sKey = "rehokzxcvbnmqwer"
+var sKey = "platshipzxcvbnmq"
 
 func pkcs7Padding(data []byte, blockSize int) []byte {
 	//判断缺少几位长度。最少1，最多 blockSize

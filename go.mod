@@ -1,4 +1,4 @@
-module github.com/rehok/go-utils
+module github.com/platship/go-utils
 
 go 1.20
 
