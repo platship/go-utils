@@ -193,18 +193,18 @@ func GetDaysByToday(start, end time.Time) int {
 }
 
 // 参数为日期格式，如：2020-01-01
-func GetBetweenTimes(startDate, endDate string, types ...string) []string {
+func GetBetweenTimes(startTime, endTime string, types ...string) []string {
 	d := []string{}
 	timeFormatTpl := FmtDateTime
-	if len(timeFormatTpl) != len(startDate) {
-		timeFormatTpl = timeFormatTpl[0:len(startDate)]
+	if len(timeFormatTpl) != len(startTime) {
+		timeFormatTpl = timeFormatTpl[0:len(startTime)]
 	}
-	date, err := time.Parse(timeFormatTpl, startDate)
+	date, err := time.Parse(timeFormatTpl, startTime)
 	if err != nil {
 		// 时间解析，异常
 		return d
 	}
-	date2, err := time.Parse(timeFormatTpl, endDate)
+	date2, err := time.Parse(timeFormatTpl, endTime)
 	if err != nil {
 		// 时间解析，异常
 		return d
@@ -214,21 +214,31 @@ func GetBetweenTimes(startDate, endDate string, types ...string) []string {
 		return d
 	}
 	// 输出日期格式固定
-	timeFormatTpl = FmtDate
 	date2Str := date2.Format(timeFormatTpl)
 	d = append(d, date.Format(timeFormatTpl))
+	i := 0
 	for {
+		if i >= 99 {
+			break
+		}
 		if len(types) > 0 {
 			var num int
 			if len(types) == 2 {
-				num, _ = strconv.Atoi(types[1])
+				num, err = strconv.Atoi(types[1])
+				if err != nil {
+					break
+				}
 			}
-			if types[0] == "hour" {
+			if types[0] == "day" {
+				date = date.AddDate(0, 0, num)
+			} else if types[0] == "hour" {
 				date = date.Add(time.Hour * time.Duration(num))
 			} else if types[0] == "minute" {
 				date = date.Add(time.Minute * time.Duration(num))
 			} else if types[0] == "moon" {
-				date = date.AddDate(0, 1, 0)
+				date = date.AddDate(0, num, 0)
+			} else {
+				break
 			}
 		} else {
 			date = date.AddDate(0, 0, 1)
@@ -238,6 +248,7 @@ func GetBetweenTimes(startDate, endDate string, types ...string) []string {
 		if dateStr == date2Str {
 			break
 		}
+		i++
 	}
 	return d
 }
