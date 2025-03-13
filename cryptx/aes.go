@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -33,8 +34,18 @@ func pkcs7UnPadding(data []byte) ([]byte, error) {
 	return data[:(length - unPadding)], nil
 }
 
+func validateLength(data []byte, blockSize int) error {
+	if len(data)%blockSize != 0 {
+		return fmt.Errorf("data length must be a multiple of block size (%d)", blockSize)
+	}
+	return nil
+}
+
 // AesEncrypt 加密
 func AesEncrypt(str, iKey string) (d string, err error) {
+	if str == "" {
+		return "", errors.New("aes encrypted content cannot ne empty")
+	}
 	if iKey == "" {
 		iKey = sKey
 	}
@@ -60,6 +71,10 @@ func AesEncrypt(str, iKey string) (d string, err error) {
 
 // AesDecrypt 解密
 func AesDecrypt(str string, iKey string) (string, error) {
+	if str == "" {
+		return "", errors.New("aes decrypted content cannot be empty")
+	}
+
 	str = strings.Replace(str, "_", "+", -1)
 	if iKey == "" {
 		iKey = sKey
@@ -77,6 +92,10 @@ func AesDecrypt(str string, iKey string) (string, error) {
 	}
 	//获取块的大小
 	blockSize := block.BlockSize()
+	// 校验数据长度
+	if err := validateLength(data, blockSize); err != nil {
+		return "", err
+	}
 	//使用cbc
 	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
 	//初始化解密数据接收切片
