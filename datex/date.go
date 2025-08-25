@@ -192,63 +192,63 @@ func GetDaysByToday(start, end time.Time) int {
 	return int(end.Sub(start).Hours() / 24)
 }
 
-// 参数为日期格式，如：2020-01-01
-func GetBetweenTimes(startTime, endTime string, types ...string) []string {
+// GetBetweenTimes 返回从 startTime 到 endTime（含）的所有时间戳字符串，步长单位可以取 "day"、"hour"、"minute" 或 "month"，
+// stepVal 表示步长数值，如果未提供则默认步长为 1 天
+func GetBetweenTimes(startTime, endTime string, unit string, stepVal ...int) []string {
 	d := []string{}
 	timeFormatTpl := FmtDateTime
+	// 如果传入的 startTime 格式与默认格式长度不一致，则截取默认格式对应长度
 	if len(timeFormatTpl) != len(startTime) {
 		timeFormatTpl = timeFormatTpl[0:len(startTime)]
 	}
-	date, err := time.Parse(timeFormatTpl, startTime)
+
+	startT, err := time.Parse(timeFormatTpl, startTime)
 	if err != nil {
-		// 时间解析，异常
 		return d
 	}
-	date2, err := time.Parse(timeFormatTpl, endTime)
+	endT, err := time.Parse(timeFormatTpl, endTime)
 	if err != nil {
-		// 时间解析，异常
 		return d
 	}
-	if date2.Before(date) {
-		// 如果结束时间小于开始时间，异常
+	if endT.Before(startT) {
 		return d
 	}
-	// 输出日期格式固定
-	date2Str := date2.Format(timeFormatTpl)
-	d = append(d, date.Format(timeFormatTpl))
-	i := 0
-	for {
+	// 默认步长为 1
+	step := 1
+	if len(stepVal) > 0 {
+		step = stepVal[0]
+	}
+
+	// 添加初始时间
+	curr := startT
+	d = append(d, curr.Format(timeFormatTpl))
+
+	for i := 0; ; i++ {
+		var next time.Time
+		switch unit {
+		case "day":
+			next = curr.AddDate(0, 0, step)
+		case "hour":
+			next = curr.Add(time.Duration(step) * time.Hour)
+		case "minute":
+			next = curr.Add(time.Duration(step) * time.Minute)
+		case "month":
+			next = curr.AddDate(0, step, 0)
+		default:
+			// 单位不合法时直接返回当前结果
+			return d
+		}
+		// 如果下一个时间不早于结束时间，则退出循环，不将 endT 加入结果
+		if !next.Before(endT) {
+			break
+		}
+		d = append(d, next.Format(timeFormatTpl))
+		curr = next
+
+		// 防止无限循环，外层写个上限 (可根据实际需求调整)
 		if i >= 99 {
 			break
 		}
-		if len(types) > 0 {
-			var num int
-			if len(types) == 2 {
-				num, err = strconv.Atoi(types[1])
-				if err != nil {
-					break
-				}
-			}
-			if types[0] == "day" {
-				date = date.AddDate(0, 0, num)
-			} else if types[0] == "hour" {
-				date = date.Add(time.Hour * time.Duration(num))
-			} else if types[0] == "minute" {
-				date = date.Add(time.Minute * time.Duration(num))
-			} else if types[0] == "moon" {
-				date = date.AddDate(0, num, 0)
-			} else {
-				break
-			}
-		} else {
-			date = date.AddDate(0, 0, 1)
-		}
-		dateStr := date.Format(timeFormatTpl)
-		d = append(d, dateStr)
-		if dateStr == date2Str {
-			break
-		}
-		i++
 	}
 	return d
 }

@@ -18,6 +18,54 @@ import (
 	"github.com/goccy/go-json"
 )
 
+// AsyncResult 用于封装异步请求的结果
+type AsyncResult struct {
+	Data []byte
+	Err  error
+}
+
+// PostAsync 异步发送 POST 请求，并通过返回的 channel 获取最终结果
+func PostAsync(url string, data interface{}, headers ...map[string]string) <-chan AsyncResult {
+	resultChan := make(chan AsyncResult, 1) // 使用缓冲1，防止 goroutine 阻塞
+	go func() {
+		// 超时时间：10秒
+		client := &http.Client{Timeout: 10 * time.Second}
+		jsonStr, err := json.Marshal(data)
+		if err != nil {
+			resultChan <- AsyncResult{nil, err}
+			return
+		}
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		if err != nil {
+			resultChan <- AsyncResult{nil, err}
+			return
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Content-Type", "application/json")
+		// 添加额外 header
+		for _, v := range headers {
+			for kk, vv := range v {
+				if kk != "" && vv != "" {
+					req.Header.Set(kk, vv)
+				}
+			}
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			resultChan <- AsyncResult{nil, err}
+			return
+		}
+		defer resp.Body.Close()
+		result, err := io.ReadAll(resp.Body)
+		if err != nil {
+			resultChan <- AsyncResult{nil, err}
+			return
+		}
+		resultChan <- AsyncResult{result, nil}
+	}()
+	return resultChan
+}
+
 // 发送GET请求
 // url：         请求地址
 // response：    请求返回的内容
@@ -25,7 +73,7 @@ func Get(url string, headers ...map[string]string) (res []byte, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return res, err
+		return res, errors.New("Get request new error:" + err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
@@ -37,12 +85,12 @@ func Get(url string, headers ...map[string]string) (res []byte, err error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return res, err
+		return res, errors.New("Get request server error:" + err.Error())
 	}
 	defer resp.Body.Close()
 	result, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return res, errors.New("读取错误")
+		return res, errors.New("Get request read error:" + err.Error())
 	}
 	return result, nil
 }
@@ -55,12 +103,15 @@ func Get(url string, headers ...map[string]string) (res []byte, err error) {
 func Post(url string, data interface{}, headers ...map[string]string) (res []byte, err error) {
 	// 超时时间：10秒
 	client := &http.Client{Timeout: 10 * time.Second}
-	jsonStr, _ := json.Marshal(data)
-
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New("Post json marshal error:" + err.Error())
+	}
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Post new request error:" + err.Error())
 	}
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
 		for kk, vv := range v {
@@ -71,12 +122,12 @@ func Post(url string, data interface{}, headers ...map[string]string) (res []byt
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Post request server error:" + err.Error())
 	}
 	defer resp.Body.Close()
 	result, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Post request read error:" + err.Error())
 	}
 	return result, nil
 }
@@ -84,12 +135,16 @@ func Post(url string, data interface{}, headers ...map[string]string) (res []byt
 func Request(method, url string, data interface{}, headers ...map[string]string) (res []byte, err error) {
 	// 超时时间：10秒
 	client := &http.Client{Timeout: 10 * time.Second}
-	jsonStr, _ := json.Marshal(data)
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New("Request json marshal error:" + err.Error())
+	}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Request new request error:" + err.Error())
 	}
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	for _, v := range headers {
 		for kk, vv := range v {
@@ -100,12 +155,12 @@ func Request(method, url string, data interface{}, headers ...map[string]string)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Request server error:" + err.Error())
 	}
 	defer resp.Body.Close()
 	result, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Request read error:" + err.Error())
 	}
 	return result, nil
 }

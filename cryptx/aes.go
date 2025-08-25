@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"strings"
@@ -66,7 +70,10 @@ func AesEncrypt(str, iKey string) (d string, err error) {
 	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
 	//执行加密
 	blockMode.CryptBlocks(crypted, encryptBytes)
-	return strings.Replace(base64.StdEncoding.EncodeToString(crypted), "+", "_", -1), nil
+	datas := base64.StdEncoding.EncodeToString(crypted)
+	datas = strings.Replace(datas, "+", "-", -1)
+	datas = strings.Replace(datas, "/", "_", -1)
+	return datas, nil
 }
 
 // AesDecrypt 解密
@@ -74,8 +81,8 @@ func AesDecrypt(str string, iKey string) (string, error) {
 	if str == "" {
 		return "", errors.New("aes decrypted content cannot be empty")
 	}
-
-	str = strings.Replace(str, "_", "+", -1)
+	str = strings.Replace(str, "-", "+", -1)
+	str = strings.Replace(str, "_", "/", -1)
 	if iKey == "" {
 		iKey = sKey
 	}
@@ -108,4 +115,76 @@ func AesDecrypt(str string, iKey string) (string, error) {
 		return "", err
 	}
 	return string(crypted), nil
+}
+
+func ParseRSAPrivateKey(privateKeyPEM string) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode([]byte(privateKeyPEM))
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return nil, errors.New("failed to decode PEM block containing the private key")
+	}
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return privateKey, nil
+}
+
+func DecryptPassword(encryptedData string, privateKey *rsa.PrivateKey) (string, error) {
+	parts := strings.Split(encryptedData, ":")
+	if len(parts) != 3 {
+		return "", errors.New("encrypted data format error")
+	}
+	keyCipher := parts[0]
+	ivBase64 := parts[1]
+	ciphertextBase64 := parts[2]
+
+	encryptedAESKey, err := base64.StdEncoding.DecodeString(keyCipher)
+	if err != nil {
+		return "", errors.New("failed to decode keyCipher")
+	}
+
+	aesKey, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, encryptedAESKey)
+	if err != nil {
+		return "", errors.New("failed to decode AES Key")
+	}
+
+	ciphertext, err := base64.StdEncoding.DecodeString(ciphertextBase64)
+	if err != nil {
+		return "", errors.New("failed to decrypt the encrypted data")
+	}
+	iv, err := base64.StdEncoding.DecodeString(ivBase64)
+	if err != nil {
+		return "", errors.New("failed to decode the IV")
+	}
+
+	password, err := aesDecrypt(ciphertext, aesKey, iv)
+	if err != nil {
+		return "", err
+	}
+
+	return string(password), nil
+}
+
+func aesDecrypt(ciphertext, key, iv []byte) ([]byte, error) {
+	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
+		return nil, errors.New("invalid AES key length: must be 16, 24, or 32 bytes")
+	}
+	if len(iv) != aes.BlockSize {
+		return nil, errors.New("invalid IV length: must be 16 bytes")
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	mode := cipher.NewCBCDecrypter(block, iv)
+	mode.CryptBlocks(ciphertext, ciphertext)
+	ciphertext = pkcs7Unpad(ciphertext)
+	return ciphertext, nil
+}
+
+func pkcs7Unpad(data []byte) []byte {
+	length := len(data)
+	padLength := int(data[length-1])
+	return data[:length-padLength]
 }
